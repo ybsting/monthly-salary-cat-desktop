@@ -1,0 +1,5 @@
+{
+  "authCode": "你的163邮箱SMTP授权码",
+  "smtpHost": "smtp.163.com",
+  "imapHost": "imap.163.com"
+}
