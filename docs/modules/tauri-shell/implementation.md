@@ -9,6 +9,7 @@
 | `src-tauri/tauri.conf.json` | 窗口、构建和打包配置 |
 | `src-tauri/icons/*` | 托盘图标和打包图标资源 |
 | `scripts/tauri-build.cmd` | Windows 构建脚本，自动探测 VS Build Tools 并运行 `npx tauri build` |
+| `.github/workflows/windows-build.yml` | GitHub Actions 云端 Windows 打包流程，上传 NSIS 安装器 artifact |
 
 ## 命令
 

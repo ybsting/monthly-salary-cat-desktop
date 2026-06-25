@@ -47,3 +47,11 @@ npm run tauri:build
 ```text
 src-tauri/target/release/bundle/nsis/
 ```
+
+如果本机启用了 Smart App Control / Code Integrity，并拦截 Cargo 生成的未签名 build script 或 proc-macro DLL，可以使用 GitHub Actions 云端打包，避免降低本机安全策略：
+
+1. 推送代码到 GitHub。
+2. 打开仓库的 `Actions`。
+3. 选择 `Build Windows Installer`。
+4. 点击 `Run workflow`。
+5. 构建完成后，在本次 workflow 的 `Artifacts` 下载 `monthly-salary-cat-windows-installer`。

@@ -23,6 +23,7 @@
 ## 当前分发规则
 
 - 安装包目标为 Windows NSIS `.exe`，配置在 `src-tauri/tauri.conf.json` 的 `bundle.targets`。
+- 云端安装包构建由 `.github/workflows/windows-build.yml` 提供，手动触发 `Build Windows Installer` 后会上传 NSIS 安装器 artifact。
 - 月薪喵采用单实例运行，`src-tauri/src/lib.rs` 的 `tauri-plugin-single-instance` 会在重复双击时唤醒已有 `main` 窗口。
 - 应用图标资源由 `src-tauri/icons/tray-icon.png` 生成，`64x64.png` 与托盘图标尺寸一致，安装包图标和托盘图标同源。
 - 邮箱授权码由用户在月薪喵邮件面板填写，保存在 WebView `localStorage`，Rust 命令只接收本次请求参数，不读取后端 `mail.local.json`。

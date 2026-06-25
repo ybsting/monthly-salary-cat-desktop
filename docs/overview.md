@@ -25,6 +25,7 @@
 - 开发：`npm run tauri:dev`
 - 前端构建：`npm run build`
 - 安装包构建：`npm run tauri:build`
+- 云端安装包构建：GitHub Actions 手动触发 `Build Windows Installer`，产物 artifact 名称为 `monthly-salary-cat-windows-installer`
 - 日常静默启动：`启动月薪喵.vbs` 调用 `scripts/start-background.ps1`，再由 `scripts/desktop-web-server.cjs` 服务 `dist/`
 - 单实例行为：`src-tauri/src/lib.rs` 使用 `tauri-plugin-single-instance`，重复双击应用不会创建第二个进程，而是显示并聚焦已运行的 `main` 窗口。
 

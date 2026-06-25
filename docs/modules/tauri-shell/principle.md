@@ -4,6 +4,8 @@ Tauri 桌面壳负责把 Vue 前端放入 Windows WebView2 中运行，并通过
 
 正式安装后的可执行文件使用 Windows GUI 子系统启动。`src-tauri/src/main.rs` 在 release 模式启用 `windows_subsystem = "windows"`，因此用户双击运行时不会显示后端命令框窗口；开发调试仍可通过 `npm run tauri:dev` 在终端中观察构建和日志。
 
+本机打包依赖 Cargo 运行 Rust 依赖的 build script 和 proc-macro DLL。如果 Windows Smart App Control / Code Integrity 阻止这些未签名临时产物运行，可以改用 `.github/workflows/windows-build.yml` 在 GitHub Actions 的 Windows runner 上打包。该方式不需要关闭本机安全策略，workflow 会执行 `npm ci` 和 `npm run tauri:build`，并上传 NSIS 安装器 artifact。
+
 ## 窗口与托盘
 
 主窗口配置在 `src-tauri/tauri.conf.json`，默认 320x320、透明、无边框、置顶且不显示在任务栏。系统托盘在 `build_tray()` 中创建，图标来自 `src-tauri/icons/tray-icon.png`，菜单提供“唤醒/隐藏宠物”和“退出宠物”。
