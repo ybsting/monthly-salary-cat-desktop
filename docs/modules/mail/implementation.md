@@ -22,6 +22,7 @@
 - `createMailPayload()`：校验收件人、主题、正文/附件和授权码，返回包含 `config` 的 payload。
 - `sendMailPayload()`：直接 `invoke('send_mail', { payload })`，并使用 `mailSendTimeoutMs = 30000` 做前端超时保护。
 - `fetchMailInboxItems()`：直接 `invoke('fetch_mail_inbox', { config: mailConfig.value })`。
+- `MailInboxItem.body`：前端收件箱详情正文类型字段，定义于 `src/components/SalaryCat.vue:70`；详情页优先展示 `selectedMailInboxItem.body`，模板位于 `src/components/SalaryCat.vue:1553`。
 - `connectMailInboxEvents()`：启动 60 秒轮询，不再创建 `EventSource`。
 - `pollMailInboxForNotifications()`：通过 `fetch_mail_inbox` 轮询并合并新邮件提醒。
 
@@ -31,6 +32,12 @@
 - `MailPayload`：新增 `config: MailConfigPayload`。
 - `send_mail(payload)`：使用 `spawn_blocking` 调用 `send_mail_sync(payload)`。
 - `fetch_mail_inbox(config)`：使用 `spawn_blocking` 调用 `fetch_mail_inbox_sync(config)`。
+- `MailInboxItem.body`：Rust 收件箱返回结构中的完整正文，定义于 `src-tauri/src/lib.rs:61`；`preview` 只保留列表摘要。
+- `parse_inbox_item(message_id, body)`：位于 `src-tauri/src/lib.rs:390`，解析发件人、主题、日期，调用完整正文提取后再生成摘要。
+- `extract_mail_body(parsed)`：位于 `src-tauri/src/lib.rs:426`，递归提取完整正文，优先使用 `text/plain`。
+- `normalize_mail_body(value, mime_type)`：位于 `src-tauri/src/lib.rs:453`，清理换行和 HTML 标签，但不截断正文。
+- `normalize_mail_preview(value)`：位于 `src-tauri/src/lib.rs:470`，只用于列表摘要，截断为 120 字符。
+- `strip_html_tags(value)`：位于 `src-tauri/src/lib.rs:476`，在没有纯文本正文时把 HTML 邮件正文转成可读文本。
 - `read_mail_auth_code(config)`：只读取命令参数中的授权码，为空时报错“请先在邮件面板填写 163 邮箱授权码”。
 - `read_mail_smtp_host(config)`：优先使用前端传入的 SMTP 主机，否则默认 `smtp.163.com`。
 - `read_mail_imap_host(config)`：优先使用前端传入的 IMAP 主机，否则默认 `imap.163.com`。

@@ -14,6 +14,7 @@
 - 配置通过 `watch([mailTo, mailAuthCode, mailSmtpHost, mailImapHost])` 保存到 WebView `localStorage`。
 - 发送按钮调用 `sendMail()`，最终通过 Tauri `invoke('send_mail')` 交给 Rust。
 - 收件箱刷新调用 `fetchMailInbox()`，最终通过 Tauri `invoke('fetch_mail_inbox')` 交给 Rust。
+- 收件箱类型 `MailInboxItem.body` 定义于 `src/components/SalaryCat.vue:70`；详情页模板位于 `src/components/SalaryCat.vue:1553`，优先展示完整正文 `selectedMailInboxItem.body`，列表仍展示摘要 `preview`。
 - 新邮件提醒由 `startMailInboxFallbackPolling()` 每 60 秒轮询 Rust 收件箱实现。
 
 ## localStorage 键

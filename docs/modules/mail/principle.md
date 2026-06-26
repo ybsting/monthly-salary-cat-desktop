@@ -21,8 +21,10 @@ Rust 后端不再读取 `src-tauri/mail.local.json`、`%APPDATA%\monthly-salary-
 1. 用户切换到“收件箱”或点击刷新。
 2. `fetchMailInboxItems()` 调用 `invoke('fetch_mail_inbox', { config })`。
 3. Rust 使用 IMAP over TLS 连接 `imapHost:993`，登录后发送 IMAP `ID` 客户端标识，再读取最近 10 封邮件。
-4. 前端展示发件人、主题、日期、摘要、正文和附件下载入口。
-5. 应用启动且授权码存在时，`connectMailInboxEvents()` 启动 60 秒轮询；轮询发现新 id 后调用 `showNewMailNotification()` 展示持久气泡。
+4. Rust 的 `parse_inbox_item()`（`src-tauri/src/lib.rs`）调用 `extract_mail_body()`（`src-tauri/src/lib.rs`）提取完整正文，写入 `MailInboxItem.body`；再用 `normalize_mail_preview()`（`src-tauri/src/lib.rs`）从完整正文生成 120 字符列表摘要。
+5. 前端列表只展示 `preview`，点击邮件后详情页模板（`src/components/SalaryCat.vue`）优先展示 `selectedMailInboxItem.body`，因此邮件详情不再被摘要长度截断。
+6. 如果邮件只有 HTML 正文，`normalize_mail_body()` 和 `strip_html_tags()`（均在 `src-tauri/src/lib.rs`）会清理标签后展示完整可读文本。
+7. 应用启动且授权码存在时，`connectMailInboxEvents()`（`src/components/SalaryCat.vue`）启动 60 秒轮询；轮询发现新 id 后调用 `showNewMailNotification()`（`src/components/SalaryCat.vue`）展示持久气泡。
 
 ## 安全边界
 

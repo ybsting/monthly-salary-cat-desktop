@@ -58,6 +58,7 @@ struct MailInboxItem {
     subject: String,
     date: String,
     preview: String,
+    body: String,
 }
 
 /// 前端也可以通过 invoke 调用这个命令，切换宠物显示状态。
@@ -398,7 +399,8 @@ fn parse_inbox_item(message_id: u32, body: &[u8]) -> MailInboxItem {
                 .get_first_value("From")
                 .unwrap_or_else(|| "未知发件人".to_string());
             let date = parsed.headers.get_first_value("Date").unwrap_or_default();
-            let preview = extract_mail_preview(&parsed);
+            let body = extract_mail_body(&parsed);
+            let preview = normalize_mail_preview(&body);
 
             MailInboxItem {
                 id: message_id.to_string(),
@@ -406,6 +408,7 @@ fn parse_inbox_item(message_id: u32, body: &[u8]) -> MailInboxItem {
                 subject,
                 date,
                 preview,
+                body,
             }
         }
         Err(error) => MailInboxItem {
@@ -414,14 +417,15 @@ fn parse_inbox_item(message_id: u32, body: &[u8]) -> MailInboxItem {
             subject: "邮件解析失败".to_string(),
             date: String::new(),
             preview: error.to_string(),
+            body: error.to_string(),
         },
     }
 }
 
-/// 递归提取邮件正文摘要，优先使用 text/plain。
-fn extract_mail_preview(parsed: &mailparse::ParsedMail<'_>) -> String {
+/// 递归提取完整邮件正文，优先使用 text/plain。
+fn extract_mail_body(parsed: &mailparse::ParsedMail<'_>) -> String {
     if parsed.subparts.is_empty() {
-        return normalize_mail_preview(parsed.get_body().unwrap_or_default());
+        return normalize_mail_body(parsed.get_body().unwrap_or_default(), &parsed.ctype.mimetype);
     }
 
     if let Some(text_part) = parsed
@@ -429,23 +433,69 @@ fn extract_mail_preview(parsed: &mailparse::ParsedMail<'_>) -> String {
         .iter()
         .find(|part| part.ctype.mimetype.eq_ignore_ascii_case("text/plain"))
     {
-        return normalize_mail_preview(text_part.get_body().unwrap_or_default());
+        return normalize_mail_body(
+            text_part.get_body().unwrap_or_default(),
+            &text_part.ctype.mimetype,
+        );
     }
 
     for part in &parsed.subparts {
-        let preview = extract_mail_preview(part);
-        if !preview.is_empty() {
-            return preview;
+        let body = extract_mail_body(part);
+        if !body.is_empty() {
+            return body;
         }
     }
 
     String::new()
 }
 
+/// 清理完整正文的换行和 HTML 标签，但不截断正文。
+fn normalize_mail_body(value: String, mime_type: &str) -> String {
+    let normalized = value.replace("\r\n", "\n").replace('\r', "\n");
+    let body = if mime_type.eq_ignore_ascii_case("text/html") {
+        strip_html_tags(&normalized)
+    } else {
+        normalized
+    };
+
+    body.lines()
+        .map(str::trim_end)
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
+}
+
 /// 清理邮件正文中的连续空白并截断为适合小面板展示的摘要。
-fn normalize_mail_preview(value: String) -> String {
+fn normalize_mail_preview(value: &str) -> String {
     let compact = value.split_whitespace().collect::<Vec<_>>().join(" ");
     compact.chars().take(120).collect()
+}
+
+/// 在没有 text/plain 时，把 HTML 正文转成可读文本兜底。
+fn strip_html_tags(value: &str) -> String {
+    let mut output = String::new();
+    let mut in_tag = false;
+
+    for character in value.chars() {
+        match character {
+            '<' => in_tag = true,
+            '>' => {
+                in_tag = false;
+                output.push(' ');
+            }
+            _ if !in_tag => output.push(character),
+            _ => {}
+        }
+    }
+
+    output
+        .replace("&nbsp;", " ")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#39;", "'")
 }
 
 /// 读取前端邮件面板随命令传入的授权码。

@@ -52,3 +52,5 @@ Image::from_bytes(include_bytes!("../icons/tray-icon.png"))
 ## 邮件后端边界
 
 Rust 后端不再读取邮箱授权码环境变量或 `mail.local.json`。`MailConfigPayload` 由前端每次调用传入，`read_mail_auth_code()`、`read_mail_smtp_host()`、`read_mail_imap_host()` 只解析该 payload 和默认主机。
+
+收件箱返回结构 `MailInboxItem` 定义于 `src-tauri/src/lib.rs:55`，其中 `body`（`src-tauri/src/lib.rs:61`）保存完整正文，`preview` 保存列表摘要。`parse_inbox_item()`（`src-tauri/src/lib.rs:390`）负责组装该结构，正文提取由 `extract_mail_body()`（`src-tauri/src/lib.rs:426`）、`normalize_mail_body()`（`src-tauri/src/lib.rs:453`）和 `strip_html_tags()`（`src-tauri/src/lib.rs:476`）完成；`normalize_mail_preview()`（`src-tauri/src/lib.rs:470`）仅用于生成列表摘要。
